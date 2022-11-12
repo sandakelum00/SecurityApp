@@ -9,17 +9,17 @@ const bcrypt = require("bcryptjs");
 
 const addUser = async (req, res, next) => {
   try {
-    const { userName, email, password, accountType } = req.body;
+    const { userName, email, password, role } = req.body;
 
-    if (!userName || !email || !password || !accountType) {
-      res.status(400);
+    if (!userName || !email || !password || !role) {
+      res.status(400).json({ message: "Please provide all values" });
       throw new Error("Please provide all values");
     }
 
     const userAlreadyExists = await User.findOne({ email });
 
     if (userAlreadyExists) {
-      res.status(400);
+      res.status(400).json({ message: "Email is already exists" });
       throw new Error("Email is already exists");
     }
 
@@ -29,7 +29,7 @@ const addUser = async (req, res, next) => {
       userName: userName,
       email: email,
       password: OTP,
-      accountType: accountType,
+      role: role,
     });
 
     await user.save();
@@ -65,18 +65,18 @@ const verifyEmail = async (req, res, next) => {
     const user = await User.findOne({ _id: userId });
 
     if (!user) {
-      res.status(401);
+      res.status(401).json({ message: "Invalid Credentials" });
       throw new Error("Invalid Credentials");
     }
 
     if (user.verify) {
-      res.status(401);
+      res.status(401).json({ message: "This account is already verified" });
       throw new Error("This account is already verified");
     }
 
     const verifyUser = await Verification.findOne({ createdBy: user._id });
     if (!verifyUser) {
-      res.status(401);
+      res.status(401).json({ message: "Sorry! user not found" });
       throw new Error("Sorry! user not found");
     }
 
@@ -86,7 +86,7 @@ const verifyEmail = async (req, res, next) => {
 
     res
       .status(200)
-      .json({ verify: user.verify, msg: "Verification successfully" });
+      .json({ verify: user.verify, message: "Verification successfully" });
 
     mailTransport().sendMail({
       from: process.env.MAILTRAP_USER,
@@ -105,24 +105,24 @@ const resetUser = async (req, res, next) => {
       req.body;
 
     if (!id || !userName || !tempPassword || !newPassword || !confirmPassword) {
-      res.status(400);
+      res.status(400).json({ message: "Please provide all values" });
       throw new Error("Please provide all values");
     }
 
     const userDetails = await User.findOne({ _id: id }).select("+password");
     if (!userDetails) {
-      res.status(404);
+      res.status(404).json({ message: `No user with id :${id}` });
       throw new Error(`No user with id :${id}`);
     }
 
     if (confirmPassword != newPassword) {
-      res.status(400);
+      res.status(400).json({ message: "Password is mismatch" });
       throw new Error("Password is mismatch");
     }
 
     const isTempPassCorrect = await userDetails.comparePassword(tempPassword);
     if (!isTempPassCorrect) {
-      res.status(400);
+      res.status(400).json({ message: "Invalid temporary password" });
       throw new Error("Invalid temporary password");
     }
 
@@ -151,30 +151,30 @@ const resetUser = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { email, password, accountType } = req.body;
+    const { email, password, role } = req.body;
 
-    if (!email || !password || !accountType) {
-      res.status(400);
+    if (!email || !password || !role) {
+      res.status(400).json({ message: "Please provide all values" });
       throw new Error("Please provide all values");
     }
 
-    if (accountType != "Admin") {
+    if (role != "Admin") {
       const user = await User.findOne({ email }).select("+password");
 
       if (!user) {
-        res.status(401);
+        res.status(401).json({ message: "Invalid Credentials" });
         throw new Error("Invalid Credentials");
       }
 
-      if (user.accountType != accountType && !user.verify && !user.status) {
-        res.status(401);
+      if (user.role != role || !user.verify || !user.status) {
+        res.status(401).json({ message: "Invalid Account Type" });
         throw new Error("Invalid Account Type");
       }
 
       const isPasswordCorrect = await user.comparePassword(password);
 
       if (!isPasswordCorrect) {
-        res.status(401);
+        res.status(401).json({ message: "Invalid Credentials" });
         throw new Error("Invalid Credentials");
       }
 
@@ -186,14 +186,14 @@ const login = async (req, res, next) => {
       const tempPass = "admin";
 
       if (email != tempEmail && password != tempPass) {
-        res.status(401);
+        res.status(401).json({ message: "Invalid Credentials" });
         throw new Error("Invalid Credentials");
       }
 
       const user = new User({
         email: tempEmail,
         password: tempPass,
-        accountType: "Admin",
+        role: "Admin",
         userName: "Admin",
         status: true,
         verify: true,

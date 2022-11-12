@@ -29,10 +29,16 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Please provide  password"],
   },
 
-  accountType: {
+  role: {
     type: String,
     enum: ["Workers", "Managers", "Admin"],
     default: "Workers",
+  },
+
+  messages: {
+    type: mongoose.Types.ObjectId,
+    ref: "Message",
+    required: false,
   },
 
   verify: {

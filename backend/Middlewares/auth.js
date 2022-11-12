@@ -4,7 +4,7 @@ const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    const err = new Error("Authentication Invalid");
+    const err = new UnAuthenticatedError("Authentication Invalid");
     next(err);
   }
 

@@ -12,7 +12,8 @@ app.use(express.json());
 const connectBD = require("./Configuration/connect.js");
 
 //import routes
-const authRouter = require("./routes/authRoutes.js");
+const authRouter = require("./Routes/authRoutes.js");
+const msgRouter = require("./Routes/messageRoutes.js");
 
 //import middleware
 const notFoundMiddleware = require("./Middlewares/not-found.js");
@@ -20,6 +21,7 @@ const errorHandlerMiddleware = require("./Middlewares/error-handler.js");
 const authenticateUser = require("./Middlewares/auth.js");
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/msg", authenticateUser, msgRouter);
 
 app.get("/", (req, res) => {
   res.json("welcome");
