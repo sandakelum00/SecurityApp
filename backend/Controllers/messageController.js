@@ -38,23 +38,32 @@ const insertMessage = async (req, res, next) => {
 };
 
 const getAllMessages = async (req, res, next) => {
-  let msg = await Message.find().populate({
-    path: "createdBy",
-    select: "userName",
-  });
+  const user = await User.findById(req.user.userId);
 
-  let msgArr = [];
-
-  for (let i = 0; i < msg.length; i++) {
-    msgArr.push({
-      userId: msg[i].createdBy._id,
-      userName: msg[i].createdBy.userName,
-      message: decryptMessage(msg[i].iv, msg[i].message),
-      time: msg[i].createdAt,
+  if (user.role === "Admin") {
+    let msg = await Message.find().populate({
+      path: "createdBy",
+      select: "userName",
     });
-  }
 
-  res.status(200).json({ msg: msgArr });
+    let msgArr = [];
+
+    for (let i = 0; i < msg.length; i++) {
+      msgArr.push({
+        userId: msg[i].createdBy._id,
+        userName: msg[i].createdBy.userName,
+        message: decryptMessage(msg[i].iv, msg[i].message),
+        time: msg[i].createdAt,
+      });
+    }
+
+    res.status(200).json({ msg: msgArr });
+  } else {
+    res.status(401).json({
+      message: "Invalid You do not have the authorization to access this.",
+    });
+    throw new Error("You do not have the authorization to access this.");
+  }
 };
 
 module.exports = { insertMessage, getAllMessages };

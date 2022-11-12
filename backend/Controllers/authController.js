@@ -158,51 +158,28 @@ const login = async (req, res, next) => {
       throw new Error("Please provide all values");
     }
 
-    if (role != "Admin") {
-      const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password");
 
-      if (!user) {
-        res.status(401).json({ message: "Invalid Credentials" });
-        throw new Error("Invalid Credentials");
-      }
-
-      if (user.role != role || !user.verify || !user.status) {
-        res.status(401).json({ message: "Invalid Account Type" });
-        throw new Error("Invalid Account Type");
-      }
-
-      const isPasswordCorrect = await user.comparePassword(password);
-
-      if (!isPasswordCorrect) {
-        res.status(401).json({ message: "Invalid Credentials" });
-        throw new Error("Invalid Credentials");
-      }
-
-      const token = user.createJWT();
-      user.password = undefined;
-      res.status(200).json({ user, token });
-    } else {
-      const tempEmail = "admin@gmail.com";
-      const tempPass = "admin";
-
-      if (email != tempEmail && password != tempPass) {
-        res.status(401).json({ message: "Invalid Credentials" });
-        throw new Error("Invalid Credentials");
-      }
-
-      const user = new User({
-        email: tempEmail,
-        password: tempPass,
-        role: "Admin",
-        userName: "Admin",
-        status: true,
-        verify: true,
-      });
-
-      const token = user.createJWT();
-      user.password = undefined;
-      res.status(200).json({ user, token });
+    if (!user) {
+      res.status(401).json({ message: "Invalid Credentials" });
+      throw new Error("Invalid Credentials");
     }
+
+    if (user.role != role || !user.verify || !user.status) {
+      res.status(401).json({ message: "Invalid Account Type" });
+      throw new Error("Invalid Account Type");
+    }
+
+    const isPasswordCorrect = await user.comparePassword(password);
+
+    if (!isPasswordCorrect) {
+      res.status(401).json({ message: "Invalid Credentials" });
+      throw new Error("Invalid Credentials");
+    }
+
+    const token = user.createJWT();
+    user.password = undefined;
+    res.status(200).json({ user, token });
   } catch (error) {
     throw new Error(error);
   }
