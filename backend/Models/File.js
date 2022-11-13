@@ -7,7 +7,7 @@ const File = new mongoose.Schema({
   },
   originalName: {
     type: String,
-    required: true,
+    //required: true,
   },
   password: String,
   downloadCount: {
@@ -15,6 +15,11 @@ const File = new mongoose.Schema({
     required: true,
     default: 0,
   },
-})
+
+  mimetype: {
+    type: String,
+    required: true,
+  },
+});
 
 module.exports = mongoose.model("File", File)
