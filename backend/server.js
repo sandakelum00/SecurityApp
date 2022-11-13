@@ -14,6 +14,7 @@ const connectBD = require("./Configuration/connect.js");
 //import routes
 const authRouter = require("./Routes/authRoutes.js");
 const msgRouter = require("./Routes/messageRoutes.js");
+const fileRouter = require("./Routes/fileRoutes")
 
 //import middleware
 const notFoundMiddleware = require("./Middlewares/not-found.js");
@@ -22,6 +23,7 @@ const authenticateUser = require("./Middlewares/auth.js");
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/msg", authenticateUser, msgRouter);
+app.use("/api/v1/file", fileRouter);
 
 app.get("/", (req, res) => {
   res.json("welcome");
