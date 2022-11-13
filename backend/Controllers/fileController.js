@@ -1,5 +1,6 @@
 const File = require("../Models/File")
 const path = require("path");
+const bcrypt = require("bcrypt");
 
 
 const asyncHandler = require("express-async-handler");
@@ -14,6 +15,10 @@ const fileUpload = async(req,res,next)=>{
       mimetype : req.file.mimetype,
 
     });
+
+     if (req.body.password != null && req.body.password !== "") {
+      fileData.password = await bcrypt.hash(req.body.password, 10)
+    }
 
     const doc = await fileData.save();
 
@@ -33,6 +38,16 @@ const downloadDoc = async(req,res,next)=>{
        res.status(400).json({ message: "Error file not found" });
         throw new Error("Error");
     }
+
+     if (file.password != null) {
+       if (req.body.password == null) {
+         throw new Error("Provide a valid password");
+       }
+
+       if (!(await bcrypt.compare(req.body.password, file.password))) {
+         throw new Error("Incorrect password.");
+       }
+     }
 
     res.set({
       "Content-Type" : file.mimetype,
