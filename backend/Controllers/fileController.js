@@ -28,6 +28,11 @@ const fileUpload = async(req,res,next)=>{
   }
 };
 
+const getAllDoc = asyncHandler(async (req, res) => {
+  const docs = await File.find({});
+  res.json(docs);
+});
+
 const downloadDoc = async(req,res,next)=>{
   try{
     const {id: docId} = req.params;
@@ -75,4 +80,4 @@ const downloadDoc = async(req,res,next)=>{
 //     res.render("index", { fileLink: `${req.headers.origin}/file/${file.id}` })
 //   };
 
-  module.exports = { fileUpload,downloadDoc };
+  module.exports = { fileUpload,getAllDoc,downloadDoc };
